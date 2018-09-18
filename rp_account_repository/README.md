@@ -31,3 +31,52 @@ brew install openldap
    * make
    * make test
    * su root -c 'make install'
+
+## openldap 설정
+### slapd.conf 설정
+* 위치 : /etc/openldap/slapd.conf
+* example
+```
+#######################################################################
+# database definitions
+#######################################################################
+database        bdb
+#suffix          "o=도메인"
+suffix          "o=groupware.com"
+
+checkpoint      1024 15
+rootdn          "cn=admin,o=groupware.com"
+# Cleartext passwords, especially for the rootdn, should
+# be avoided.  See slappasswd(8) and slapd.conf(5) for details.
+# Use of strong authentication encouraged.
+# rootpw                secret
+# groupware123
+rootpw                {SSHA}3nT4XxFIIfxbxEyKWK8TqdQw9TyTvMzP
+
+access to *
+    by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" manage
+
+access to attrs=userPassword
+    by self write
+    by * auth
+
+access to dn.base=o=groupware.com
+    by * search
+    by * none
+
+
+# enable on-the-fly configuration (cn=config)
+database config
+access to *
+        by dn.exact="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" manage
+        by dn.exact="cn=admin,o=groupware.com" read
+        by * none
+
+# enable server status monitoring (cn=monitor)
+database monitor
+access to *
+        by dn.exact="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" read
+        by dn.exact="cn=admin,o=groupware.com" read
+        by * none
+
+```
